@@ -24,7 +24,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdio.h>
 #include "dirname.h"
 
 #if ! HAVE_MEMPCPY && ! defined mempcpy
@@ -70,10 +70,11 @@ mfile_name_concat (char const *dir, char const *abase, char **base_in_result)
 
   char *p_concat = malloc (dirlen + needs_separator + baselen + 1);
   char *p;
-
+  DBG("[param] dir:%s, abase:%s\n", dir, abase);	
   if (p_concat == NULL)
     return NULL;
-
+  DBG("dirbase:%s, dirbaselen:%d, dirlen:%d, needs_separator:%d, base:%s, baselen:%d\n",
+		dirbase,dirbaselen,dirlen,needs_separator,base, baselen);
   p = mempcpy (p_concat, dir, dirlen);
   *p = DIRECTORY_SEPARATOR;
   p += needs_separator;
@@ -83,6 +84,6 @@ mfile_name_concat (char const *dir, char const *abase, char **base_in_result)
 
   p = mempcpy (p, base, baselen);
   *p = '\0';
-
+  DBG("ret value:%s ,base_in_result:%s\n", p_concat, *base_in_result);
   return p_concat;
 }

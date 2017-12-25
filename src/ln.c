@@ -528,7 +528,7 @@ main (int argc, char **argv)
 
   n_files = argc - optind;
   file = argv + optind;
-
+  DBG("n_files:%d\n", n_files);
   if (n_files <= 0)
     {
       error (0, 0, _("missing file operand"));
@@ -574,7 +574,7 @@ main (int argc, char **argv)
              _("cannot do --relative without --symbolic"));
     }
 
-
+  DBG("target_dir:%s\n", target_directory);
   if (target_directory)
     {
       /* Create the data structure we'll use to record which hard links we
@@ -607,12 +607,15 @@ main (int argc, char **argv)
                                          last_component (file[i]),
                                          &dest_base);
           strip_trailing_slashes (dest_base);
+		  DBG("file:%s, dest:%s\n", file[i], dest);
           ok &= do_link (file[i], dest);
           free (dest);
         }
     }
   else
+  {
+	DBG("file[0]:%s, file[1]:%s\n", file[0], file[1]);
     ok = do_link (file[0], file[1]);
-
+  }
   return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
