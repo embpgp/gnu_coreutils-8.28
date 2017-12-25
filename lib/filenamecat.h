@@ -17,14 +17,14 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* Written by Jim Meyering.  */
-#define DEBUG 1
-#ifdef DEBUG
+#define DEBUG 0
+#if DEBUG
 
 #define DBG(fmt, ...) do { \
 	printf("[%s][%d %s]"fmt,__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__);\
 }while(0);
 
-#elif
+#else
 
 #define DBG(fmt,...)
 
