@@ -470,7 +470,7 @@ main (int argc, char **argv)
         case 'F':
           hard_dir_link = true;
           break;
-        case 'f':
+        case 'f'://强制标志,这里对应两个变量
           remove_existing_files = true;
           interactive = false;
           break;
@@ -490,11 +490,11 @@ main (int argc, char **argv)
         case 'r':
           relative = true;
           break;
-        case 's':
+        case 's': //软链接
           symbolic_link = true;
           break;
         case 't':
-          if (target_directory)
+          if (target_directory) //手动加-t参数,不考虑
             die (EXIT_FAILURE, 0, _("multiple target directories specified"));
           else
             {
@@ -535,7 +535,7 @@ main (int argc, char **argv)
       usage (EXIT_FAILURE);
     }
 
-  if (no_target_directory)
+  if (no_target_directory)//先不考虑-T
     {
       if (target_directory)
         die (EXIT_FAILURE, 0,
@@ -552,17 +552,17 @@ main (int argc, char **argv)
           usage (EXIT_FAILURE);
         }
     }
-  else if (!target_directory)
+  else if (!target_directory)//不加-t参数会进来这个逻辑
     {
+      DBG("file[n_files -1] = file[%d] = %s\n", n_files - 1, file[n_files - 1]);
       if (n_files < 2)
-        target_directory = ".";
+        target_directory = ".";//若为空表示在当前目录
       else if (2 <= n_files && target_directory_operand (file[n_files - 1]))
-        target_directory = file[--n_files];
-      else if (2 < n_files)
+        target_directory = file[--n_files];//通过命令行取得目的链接文件参数
+      else if (2 < n_files) //>2说明非法
         die (EXIT_FAILURE, 0, _("target %s is not a directory"),
              quoteaf (file[n_files - 1]));
     }
-
   backup_type = (make_backups
                  ? xget_version (_("backup type"), version_control_string)
                  : no_backups);
@@ -584,12 +584,12 @@ main (int argc, char **argv)
           && remove_existing_files
           /* Don't bother trying to protect symlinks, since ln clobbering
              a just-created symlink won't ever lead to real data loss.  */
-          && ! symbolic_link
+          && ! symbolic_link //具体分析建立软链接的,因此这里的逻辑进不去
           /* No destination hard link can be clobbered when making
              numbered backups.  */
           && backup_type != numbered_backups)
 
-        {
+        {//软链接的进不来这里
           dest_set = hash_initialize (DEST_INFO_INITIAL_CAPACITY,
                                       NULL,
                                       triple_hash,
@@ -599,22 +599,22 @@ main (int argc, char **argv)
             xalloc_die ();
         }
 
-      ok = true;
+      ok = true;//个人认为for循环没必要.反正n_files肯定为1,可能是为了后期扩展能够支持多链接参数
       for (int i = 0; i < n_files; ++i)
         {
-          char *dest_base;
+          char *dest_base;//关键看这个处理函数
           char *dest = file_name_concat (target_directory,
                                          last_component (file[i]),
                                          &dest_base);
-          strip_trailing_slashes (dest_base);
-		  DBG("file:%s, dest:%s\n", file[i], dest);
+          strip_trailing_slashes (dest_base);//dest_base后面没有用到,不管
+		      DBG("file:%s, dest:%s\n", file[i], dest);
           ok &= do_link (file[i], dest);
           free (dest);
         }
     }
-  else
+  else //这里的逻辑是由于target_dir不存在而进来,若target_dir是一个软链接同时lstat指向不存在也会进这个逻辑
   {
-	DBG("file[0]:%s, file[1]:%s\n", file[0], file[1]);
+	  DBG("file[0]:%s, file[1]:%s\n", file[0], file[1]);
     ok = do_link (file[0], file[1]);
   }
   return ok ? EXIT_SUCCESS : EXIT_FAILURE;
