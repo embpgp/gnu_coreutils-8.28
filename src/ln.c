@@ -126,10 +126,12 @@ target_directory_operand (char const *file)
   size_t blen = strlen (b);
   bool looks_like_a_dir = (blen == 0 || ISSLASH (b[blen - 1]));
   struct stat st;
-  int stat_result =
+  int stat_result = //当-n参数置位的时候则调用lstat函数,可以直接取得软链接本身自己
     (dereference_dest_dir_symlinks ? stat (file, &st) : lstat (file, &st));
   int err = (stat_result == 0 ? 0 : errno);
-  bool is_a_dir = !err && S_ISDIR (st.st_mode);
+  DBG("err:%d\n", err);//当file本身是一个软链接的时候,st.st_mode不是一个目录,导致返回值is_a_dir为false
+  bool is_a_dir = !err && S_ISDIR (st.st_mode);//间接导致调用者的if语句进不去,target_directory仍旧为NULL
+  DBG("is_a_dir:%s\n", is_a_dir? "true":"false");
   if (err && ! errno_nonexisting (errno))
     die (EXIT_FAILURE, err, _("failed to access %s"), quoteaf (file));
   if (is_a_dir < looks_like_a_dir)
@@ -481,7 +483,7 @@ main (int argc, char **argv)
         case 'L':
           logical = true;
           break;
-        case 'n':
+        case 'n'://正解是这个参数置位
           dereference_dest_dir_symlinks = false;
           break;
         case 'P':
@@ -575,7 +577,7 @@ main (int argc, char **argv)
     }
 
   DBG("target_dir:%s\n", target_directory);
-  if (target_directory)
+  if (target_directory)//若为软链接同时-n置位,则进不了这个逻辑
     {
       /* Create the data structure we'll use to record which hard links we
          create.  Used to ensure that ln detects an obscure corner case that
@@ -612,7 +614,7 @@ main (int argc, char **argv)
           free (dest);
         }
     }
-  else //这里的逻辑是由于target_dir不存在而进来,若target_dir是一个软链接同时lstat指向不存在也会进这个逻辑
+  else //这里的逻辑是由于target_dir不存在而进来,若target_dir是一个软链接同时-n参数置位也会进这个逻辑
   {
 	  DBG("file[0]:%s, file[1]:%s\n", file[0], file[1]);
     ok = do_link (file[0], file[1]);
