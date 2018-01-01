@@ -17,7 +17,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* Written by Jim Meyering.  */
-#define DEBUG 0
+#define DEBUG 1
 #if DEBUG
 
 #define DBG(fmt, ...) do { \
